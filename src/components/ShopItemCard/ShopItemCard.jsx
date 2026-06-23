@@ -1,4 +1,5 @@
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -6,7 +7,9 @@ import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import Skeleton from '@mui/material/Skeleton';
 import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
 import { useEffect, useState } from 'react';
+import ShopItemDetailModal from '../ShopItemDetailModal/ShopItemDetailModal';
 
 import { formatCurrency } from 'utils/formatters';
 
@@ -15,6 +18,7 @@ const DEFAULT_CURRENCY = 'LKR';
 export default function ShopItemCard({ currency = DEFAULT_CURRENCY, item, onAddItem }) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [open, setOpen] = useState(false);
   const showImage = Boolean(item.image && !imageError);
 
   useEffect(() => {
@@ -23,7 +27,25 @@ export default function ShopItemCard({ currency = DEFAULT_CURRENCY, item, onAddI
   }, [item.image]);
 
   return (
-    <Card sx={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <Card sx={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' }}>
+      <IconButton
+        onClick={() => setOpen(true)}
+        sx={{
+          position: 'absolute',
+          top: 8,
+          right: 8,
+          bgcolor: 'rgba(255, 255, 255, 0.8)',
+          '&:hover': {
+            bgcolor: 'rgba(255, 255, 255, 0.95)'
+          },
+          zIndex: 1
+        }}
+        size="small"
+        color="primary"
+      >
+        <VisibilityIcon fontSize="small" />
+      </IconButton>
+
       {showImage ? (
         <Box
           sx={{
@@ -89,6 +111,14 @@ export default function ShopItemCard({ currency = DEFAULT_CURRENCY, item, onAddI
           Add to cart
         </Button>
       </CardActions>
+
+      <ShopItemDetailModal
+        open={open}
+        onClose={() => setOpen(false)}
+        item={item}
+        currency={currency}
+        onAddItem={onAddItem}
+      />
     </Card>
   );
 }
