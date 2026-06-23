@@ -58,11 +58,28 @@ function isToday(value) {
 function getStatusColor(status) {
   const normalizedStatus = String(status || '').toUpperCase();
 
-  if (['DELIVERED', 'COMPLETED', 'PAID'].includes(normalizedStatus)) return 'success';
-  if (['CANCELLED', 'CANCELED', 'FAILED', 'REJECTED'].includes(normalizedStatus)) return 'error';
-  if (['PROCESSING', 'CONFIRMED', 'SHIPPED'].includes(normalizedStatus)) return 'info';
-
-  return 'warning';
+  switch (normalizedStatus) {
+    case 'PENDING':
+      return 'warning';
+    case 'CONFIRMED':
+      return 'primary';
+    case 'PROCESSING':
+      return 'info';
+    case 'READY':
+      return 'secondary';
+    case 'SERVED':
+    case 'COMPLETED':
+    case 'DELIVERED':
+    case 'PAID':
+      return 'success';
+    case 'CANCELLED':
+    case 'CANCELED':
+    case 'FAILED':
+    case 'REJECTED':
+      return 'error';
+    default:
+      return 'default';
+  }
 }
 
 function formatAddress(address) {
