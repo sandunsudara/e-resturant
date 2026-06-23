@@ -13,6 +13,8 @@ import Typography from '@mui/material/Typography';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
 
 import PageLoader from 'components/PageLoader/PageLoader';
 import { selectCurrentShop } from 'features/shop/shopSlice';
@@ -37,6 +39,20 @@ function formatDate(value) {
     month: 'short',
     year: 'numeric'
   }).format(date);
+}
+
+function isToday(value) {
+  if (!value) return false;
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return false;
+
+  const today = new Date();
+  return (
+    date.getDate() === today.getDate() &&
+    date.getMonth() === today.getMonth() &&
+    date.getFullYear() === today.getFullYear()
+  );
 }
 
 function getStatusColor(status) {
@@ -64,9 +80,15 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true);
   const [orders, setOrders] = useState([]);
   
+  const [activeTab, setActiveTab] = useState(0);
+  
   const phone = useSelector(selectUserPhoneNumber);
   const latestStatus = useUserOrderSocket(phone);
   const vendorId = shop ? getShopVendorId(shop) : null;
+
+  const todayOrders = orders.filter((order) => isToday(order.createdAt));
+  const previousOrders = orders.filter((order) => !isToday(order.createdAt));
+  const displayedOrders = activeTab === 0 ? todayOrders : previousOrders;
 
   // console.log(latestStatus);  
 
@@ -131,18 +153,29 @@ export default function OrdersPage() {
 
       {error ? <Alert severity="error">{error}</Alert> : null}
 
-      {!error && !orders.length ? (
+      {!error && (
+        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+          <Tabs value={activeTab} onChange={(e, newValue) => setActiveTab(newValue)} aria-label="orders tabs">
+            <Tab label={`Today (${todayOrders.length})`} />
+            <Tab label={`Previous (${previousOrders.length})`} />
+          </Tabs>
+        </Box>
+      )}
+
+      {!error && !displayedOrders.length ? (
         <Stack alignItems="center" spacing={1.5} sx={{ py: 8, textAlign: 'center' }}>
           <ReceiptLongIcon color="disabled" sx={{ fontSize: 56 }} />
           <Box>
             <Typography variant="h4">No orders found</Typography>
-            <Typography color="text.secondary">Your orders will appear here after checkout.</Typography>
+            <Typography color="text.secondary">
+              {activeTab === 0 ? 'No orders placed today.' : 'No previous orders found.'}
+            </Typography>
           </Box>
         </Stack>
       ) : null}
 
       <Stack spacing={1.5}>
-        {orders.map((order) => (
+        {displayedOrders.map((order) => (
           <Accordion key={order.id} disableGutters>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Stack
