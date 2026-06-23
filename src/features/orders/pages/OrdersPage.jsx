@@ -105,7 +105,11 @@ export default function OrdersPage() {
           return {
             ...order,
             status: latestStatus.status,
-            paymentStatus: latestStatus.payment_status || order.paymentStatus
+            paymentStatus: latestStatus.payment_status || order.paymentStatus,
+            items: (order.items || []).map((item) => ({
+              ...item,
+              status: latestStatus.status
+            }))
           };
         }
         return order;
