@@ -55,31 +55,29 @@ function isToday(value) {
   );
 }
 
-function getStatusColor(status) {
-  const normalizedStatus = String(status || '').toUpperCase();
+const STATUS_STYLES = {
+  PENDING: { bg: '#FFF3E0', color: '#E65100' }, // Orange
+  ACTIVE: { bg: '#E0F7FA', color: '#006064' }, // Cyan
+  PREPARING: { bg: '#F1F8E9', color: '#33691E' }, // Yellow-Green
+  READY: { bg: '#E8EAF6', color: '#1A237E' }, // Indigo
+  READY_TO_TABLE: { bg: '#FCE4EC', color: '#880E4F' }, // Pink
+  REQ_PAYMENT: { bg: '#F9FBE7', color: '#827717' }, // Lime
+  COMPLETED: { bg: '#E8F5E9', color: '#2E7D32' }, // Light Green
+  CANCELED: { bg: '#FFEBEE', color: '#C62828' }, // Light Red
+  CANCELLED: { bg: '#FFEBEE', color: '#C62828' }, // Light Red
+  SERVED: { bg: '#E0F2F1', color: '#004D40' }, // Teal
+  PAID: { bg: '#E8F5E9', color: '#1B5E20' }, // Green
+  DELIVERED: { bg: '#E0F2F1', color: '#00796B' }, // Deep Teal
+  FAILED: { bg: '#FFEBEE', color: '#C62828' }, // Red
+  REJECTED: { bg: '#FFEBEE', color: '#B71C1C' }, // Dark Red
+  PROCESSING: { bg: '#E1F5FE', color: '#01579B' }, // Blue
+  CONFIRMED: { bg: '#E3F2FD', color: '#0D47A1' }, // Deep Blue
+  SHIPPED: { bg: '#F3E5F5', color: '#4A148C' } // Purple
+};
 
-  switch (normalizedStatus) {
-    case 'PENDING':
-      return 'warning';
-    case 'CONFIRMED':
-      return 'primary';
-    case 'PROCESSING':
-      return 'info';
-    case 'READY':
-      return 'secondary';
-    case 'SERVED':
-    case 'COMPLETED':
-    case 'DELIVERED':
-    case 'PAID':
-      return 'success';
-    case 'CANCELLED':
-    case 'CANCELED':
-    case 'FAILED':
-    case 'REJECTED':
-      return 'error';
-    default:
-      return 'default';
-  }
+function getStatusStyle(status) {
+  const normalizedStatus = String(status || '').toUpperCase();
+  return STATUS_STYLES[normalizedStatus] || { bg: '#F5F5F5', color: '#616161' };
 }
 
 function formatAddress(address) {
@@ -216,7 +214,15 @@ export default function OrdersPage() {
                   ) : null}
                 </Box>
                 <Stack alignItems="center" direction="row" spacing={1}>
-                  <Chip color={getStatusColor(order.status)} label={getStatusDescription(order.status)} size="small" />
+                  <Chip
+                    label={getStatusDescription(order.status)}
+                    size="small"
+                    sx={{
+                      bgcolor: getStatusStyle(order.status).bg,
+                      color: getStatusStyle(order.status).color,
+                      fontWeight: 600
+                    }}
+                  />
                   {order.status === 'SERVED' && order.paymentStatus !== 'PAID' && (
                     <Button
                       size="small"
@@ -315,10 +321,16 @@ export default function OrdersPage() {
                             </Typography>
                             {item.status ? (
                               <Chip
-                                color={getStatusColor(item.status)}
                                 label={getStatusDescription(item.status)}
                                 size="small"
-                                sx={{ height: 18, fontSize: '0.65rem', px: 0.5 }}
+                                sx={{
+                                  height: 18,
+                                  fontSize: '0.65rem',
+                                  px: 0.5,
+                                  bgcolor: getStatusStyle(item.status).bg,
+                                  color: getStatusStyle(item.status).color,
+                                  fontWeight: 600
+                                }}
                               />
                             ) : null}
                           </Stack>
