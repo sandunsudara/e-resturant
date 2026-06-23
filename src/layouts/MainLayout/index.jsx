@@ -16,7 +16,7 @@ export default function MainLayout({ children }) {
     <Box sx={{ bgcolor: 'background.default', minHeight: '100vh' }}>
       <AppHeader onCartOpen={() => setCartOpen(true)} />
 
-      <Container component="main" maxWidth="lg" sx={{ py: { sm: 2 } }}>
+      <Container component="main" maxWidth="lg" sx={{ py: { sm: 2 }, pb: { xs: 8, sm: 2 } }}>
         {children}
       </Container>
 

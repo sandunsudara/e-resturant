@@ -1,6 +1,7 @@
 import ApiManager from 'app/apiManager';
+import { getImageUrl } from 'utils/assets';
 
-const DEFAULT_ORDER_USER_ID = 38;
+const DEFAULT_ORDER_USER_ID = null;
 
 const defaultCustomer = {
   contact_name: 'sasa sudara',
@@ -41,6 +42,11 @@ function normalizeOrderItems(order) {
     price: Number(
       firstPresent(item.price, item.purchase_price, item.purchasePrice, item.unit_price, item.unitPrice, item.product?.unit_price, 0)
     ),
+    image: getImageUrl({
+      imageName: firstPresent(item.product?.thumbnail, item.product?.image, item.thumbnail, item.image, ''),
+      type: 'brand'
+    }),
+    status: firstPresent(item.status, 'PENDING'),
     variation: firstPresent(
       item.variation,
       item.variation_name,
@@ -143,6 +149,22 @@ export default class OrderService {
       vendorId
     });
 
-    return normalizeOrders(payload);
+    console.log(payload);
+
+    return payload?.data ? normalizeOrder(payload.data) : null;
+  }
+
+  static async updateOrderStatus({ sessionId, status, vendorId, signal }) {
+    const body = {
+      session_id: sessionId,
+      status
+    };
+
+    return ApiManager.post({
+      body,
+      endpoint: '/order/status/update',
+      signal,
+      vendorId
+    });
   }
 }

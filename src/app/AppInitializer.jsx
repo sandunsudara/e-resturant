@@ -150,6 +150,53 @@ export default function AppInitializer() {
   const isActiveShopLoaded = shop?.slug === shopSlug;
   const userDetailsRequired = isActiveShopLoaded && !hasUserDetails;
 
+  const applyThemeConfig = (config) => {
+    const updatedConfig = { ...config };
+    if (shopSlug === 'burley') {
+      updatedConfig.fontFamily = 'Outfit, sans-serif';
+      updatedConfig.palette = {
+        ...updatedConfig.palette,
+        primary: {
+          main: '#F8A127',
+          light: '#fdf5e6',
+          dark: '#e08a1d',
+          contrastText: '#3D1D24',
+          200: '#ffd54f',
+          800: '#b86d11'
+        },
+        secondary: {
+          main: '#3D1D24',
+          light: '#f3ecee',
+          dark: '#2e151b',
+          contrastText: '#ffffff',
+          200: '#bda3a9',
+          800: '#1e0e11'
+        },
+        background: {
+          default: '#faf8f5',
+          paper: '#ffffff'
+        },
+        text: {
+          primary: '#3D1D24',
+          secondary: '#6E555A',
+          heading: '#3D1D24'
+        }
+      };
+      updatedConfig.typography = {
+        ...updatedConfig.typography,
+        fontFamily: 'Outfit, sans-serif',
+        h1: { fontFamily: 'Playfair Display, serif', fontWeight: 700, color: '#3D1D24' },
+        h2: { fontFamily: 'Playfair Display, serif', fontWeight: 700, color: '#3D1D24' },
+        h3: { fontFamily: 'Playfair Display, serif', fontWeight: 600, color: '#3D1D24' },
+        h4: { fontFamily: 'Playfair Display, serif', fontWeight: 600, color: '#3D1D24' },
+        h5: { fontFamily: 'Playfair Display, serif', fontWeight: 600, color: '#3D1D24' },
+        h6: { fontFamily: 'Playfair Display, serif', fontWeight: 600, color: '#3D1D24' },
+        button: { fontFamily: 'Outfit, sans-serif', fontWeight: 600 }
+      };
+    }
+    setConfig(updatedConfig);
+  };
+
   useEffect(() => {
     setUserForm({
       name: userName || '',
@@ -176,8 +223,19 @@ export default function AppInitializer() {
           dispatch(setUserDetails(queryUserDetails));
         }
 
+        if (shopSlug === 'burley') {
+          // Inject brand font (e.g. Outfit and Playfair Display)
+          if (!document.getElementById('brand-fonts')) {
+            const link = document.createElement('link');
+            link.id = 'brand-fonts';
+            link.rel = 'stylesheet';
+            link.href = 'https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap';
+            document.head.appendChild(link);
+          }
+        }
+
         if (nextShop.theme) {
-          setConfig(nextShop.theme);
+          applyThemeConfig(nextShop.theme);
         }
 
         try {
@@ -186,7 +244,7 @@ export default function AppInitializer() {
             slug: 'main',
             vendorId
           });
-          setConfig(getThemeConfigFromPageContent(pageContent));
+          applyThemeConfig(getThemeConfigFromPageContent(pageContent));
         } catch (themeError) {
           if (themeError.name === 'AbortError') return;
 
@@ -236,17 +294,20 @@ export default function AppInitializer() {
   const handleSaveUserDetails = (event) => {
     event.preventDefault();
 
-    const nextUserDetails = {
-      name: userForm.name.trim(),
-      phoneNumber: userForm.phoneNumber.trim()
-    };
+    const name = userForm.name.trim();
+    const phoneNumber = userForm.phoneNumber.trim();
 
-    if (!nextUserDetails.name || !nextUserDetails.phoneNumber) {
+    if (!name || !phoneNumber) {
       showSnackbar('Enter your name and phone number.', 'warning');
       return;
     }
 
-    dispatch(setUserDetails(nextUserDetails));
+    if (!/^0\d{9}$/.test(phoneNumber)) {
+      showSnackbar('Phone number must be 10 digits starting with 0.', 'error');
+      return;
+    }
+
+    dispatch(setUserDetails({ name, phoneNumber }));
   };
 
   if (loading && !isActiveShopLoaded) {

@@ -214,6 +214,9 @@ export default function CartDrawer({ open, onClose, shopSlug }) {
             <Typography variant="h4">{formatCurrency(subtotal, currency)}</Typography>
           </Stack>
           <Stack direction="row" spacing={1}>
+            <Button color="inherit" onClick={onClose} size="small" variant="outlined">
+              Back
+            </Button>
             <Button color="inherit" disabled={!hasItems} fullWidth onClick={handleClearCart} variant="outlined">
               Clear
             </Button>
