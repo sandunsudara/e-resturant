@@ -65,9 +65,11 @@ export default function PaymentPage() {
           vendorId
         });
 
-        console.log('ss', nextOrder);
-
-        setOrder(nextOrder);
+        if (nextOrder && nextOrder.paymentStatus?.toUpperCase() === 'PAID') {
+          setOrder(null);
+        } else {
+          setOrder(nextOrder);
+        }
         setLoading(false);
       } catch (requestError) {
         if (requestError.name === 'AbortError') return;
