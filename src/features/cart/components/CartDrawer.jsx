@@ -13,6 +13,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
 import {
   clearCart,
@@ -34,6 +35,7 @@ const DEFAULT_CURRENCY = 'LKR';
 
 export default function CartDrawer({ open, onClose, shopSlug }) {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [placingOrder, setPlacingOrder] = useState(false);
   const { showSnackbar } = useSnackbar();
   const shop = useSelector(selectCurrentShop);
@@ -69,6 +71,7 @@ export default function CartDrawer({ open, onClose, shopSlug }) {
       dispatch(clearCart({ shopSlug }));
       showSnackbar('Order placed successfully.', 'success');
       onClose();
+      navigate(`/${shopSlug}/payment`);
     } catch (error) {
       showSnackbar(error.message || 'Unable to place order.', 'error');
     } finally {
@@ -227,7 +230,7 @@ export default function CartDrawer({ open, onClose, shopSlug }) {
               startIcon={<ShoppingCartCheckoutIcon />}
               variant="contained"
             >
-              {placingOrder ? 'Placing order...' : 'Order'}
+              {placingOrder ? 'Checking out...' : 'Checkout'}
             </Button>
           </Stack>
         </Stack>
