@@ -36,6 +36,7 @@ function getUserDetailsFromSearch(search) {
       params.get('phone_number') ||
       params.get('phone') ||
       params.get('mobile') ||
+      params.get('mobileNumber') ||
       params.get('contact') ||
       ''
     ).trim()
