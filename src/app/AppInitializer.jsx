@@ -25,6 +25,8 @@ import MainLayout from '../layouts/MainLayout';
 import ShopService from '../services/ShopService';
 import CategoryService from '../services/CategoryService';
 import { getShopVendorId } from '../utils/shopUtils';
+import { useUserOrderSocket } from '../components/UserOrderSocket/UserOrderSocket';
+import OrderReadyDialog from '../components/OrderReadyDialog/OrderReadyDialog';
 
 function getUserDetailsFromSearch(search) {
   const params = new URLSearchParams(search);
@@ -150,6 +152,15 @@ export default function AppInitializer() {
   const [userForm, setUserForm] = useState({ name: '', phoneNumber: '' });
   const isActiveShopLoaded = shop?.slug === shopSlug;
   const userDetailsRequired = isActiveShopLoaded && !hasUserDetails;
+
+  const latestStatus = useUserOrderSocket(userPhoneNumber);
+  const [readyOrder, setReadyOrder] = useState(null);
+
+  useEffect(() => {
+    if (latestStatus && latestStatus.status === 'READY_TO_TABLE') {
+      setReadyOrder(latestStatus);
+    }
+  }, [latestStatus]);
 
   const applyThemeConfig = (config) => {
     const updatedConfig = { ...config };
@@ -337,6 +348,11 @@ export default function AppInitializer() {
         onSubmit={handleSaveUserDetails}
         open={userDetailsRequired}
         userForm={userForm}
+      />
+      <OrderReadyDialog
+        open={Boolean(readyOrder)}
+        orderId={readyOrder?.order_id}
+        onClose={() => setReadyOrder(null)}
       />
     </MainLayout>
   );
