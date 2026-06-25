@@ -265,7 +265,7 @@ export default function AppInitializer() {
           if (categoryError.name === 'AbortError') return;
 
           dispatch(setCategoriesError(categoryError.message));
-          showSnackbar(categoryError.message || 'Unable to load categories.', 'error');
+          showSnackbar(categoryError.message || 'Unable to load categories.', { severity: 'error', vertical: 'top', horizontal: 'center', duration: 4000 });
         }
       } catch (requestError) {
         if (requestError.name === 'AbortError') return;
@@ -276,7 +276,7 @@ export default function AppInitializer() {
         }
 
         dispatch(setShopError(requestError.message));
-        showSnackbar(requestError.message || 'Unable to load shop details.', 'error');
+        showSnackbar(requestError.message || 'Unable to load shop details.', { severity: 'error', vertical: 'top', horizontal: 'center', duration: 4000 });
       }
     }
 
@@ -299,12 +299,12 @@ export default function AppInitializer() {
     const phoneNumber = userForm.phoneNumber.trim();
 
     if (!name || !phoneNumber) {
-      showSnackbar('Enter your name and phone number.', 'warning');
+      showSnackbar('Enter your name and phone number.', { severity: 'warning', vertical: 'top', horizontal: 'center', duration: 3000 });
       return;
     }
 
     if (!/^0\d{9}$/.test(phoneNumber)) {
-      showSnackbar('Phone number must be 10 digits starting with 0.', 'error');
+      showSnackbar('Phone number must be 10 digits starting with 0.', { severity: 'error', vertical: 'top', horizontal: 'center', duration: 4000 });
       return;
     }
 

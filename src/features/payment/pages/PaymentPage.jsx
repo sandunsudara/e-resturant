@@ -105,7 +105,7 @@ export default function PaymentPage() {
       setPaymentOpen(false);
       setSuccessOpen(true);
     } catch (requestError) {
-      showSnackbar(requestError.message || 'Unable to update payment status.', 'error');
+      showSnackbar(requestError.message || 'Unable to update payment status.', { severity: 'error', vertical: 'top', horizontal: 'center', duration: 4000 });
     } finally {
       setSubmitting(false);
     }

@@ -47,12 +47,12 @@ export default function CartDrawer({ open, onClose, shopSlug }) {
 
   const handleClearCart = () => {
     dispatch(clearCart({ shopSlug }));
-    showSnackbar('Cart cleared.', 'info');
+    showSnackbar('Cart cleared.', { severity: 'info', vertical: 'top', horizontal: 'center', duration: 2500 });
   };
 
   const handleRemoveItem = (itemId) => {
     dispatch(removeItem({ shopSlug, itemId }));
-    showSnackbar('Item removed from cart.', 'info');
+    showSnackbar('Item removed from cart.', { severity: 'info', vertical: 'top', horizontal: 'center', duration: 2500 });
   };
 
   const handlePlaceOrder = async () => {
@@ -69,11 +69,11 @@ export default function CartDrawer({ open, onClose, shopSlug }) {
       });
 
       dispatch(clearCart({ shopSlug }));
-      showSnackbar('Order placed successfully.', 'success');
+      showSnackbar('Order placed successfully.', { severity: 'success', vertical: 'top', horizontal: 'center', duration: 3000 });
       onClose();
       navigate(`/${shopSlug}/payment`);
     } catch (error) {
-      showSnackbar(error.message || 'Unable to place order.', 'error');
+      showSnackbar(error.message || 'Unable to place order.', { severity: 'error', vertical: 'top', horizontal: 'center', duration: 4000 });
     } finally {
       setPlacingOrder(false);
     }

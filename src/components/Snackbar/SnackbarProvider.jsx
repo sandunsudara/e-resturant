@@ -9,7 +9,10 @@ export function SnackbarProvider({ children }) {
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: '',
-    severity: 'info'
+    severity: 'info',
+    vertical: 'top',
+    horizontal: 'center',
+    duration: 2000
   });
 
   const hideSnackbar = useCallback(() => {
@@ -22,7 +25,10 @@ export function SnackbarProvider({ children }) {
     setSnackbar({
       open: true,
       message,
-      severity: nextOptions.severity || 'info'
+      severity: nextOptions.severity || 'info',
+      vertical: nextOptions.vertical || nextOptions.position?.vertical || 'top',
+      horizontal: nextOptions.horizontal || nextOptions.position?.horizontal || 'center',
+      duration: nextOptions.duration !== undefined ? nextOptions.duration : 5000
     });
   }, []);
 
@@ -32,8 +38,8 @@ export function SnackbarProvider({ children }) {
     <SnackbarContext.Provider value={value}>
       {children}
       <Snackbar
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        autoHideDuration={5000}
+        anchorOrigin={{ vertical: snackbar.vertical, horizontal: snackbar.horizontal }}
+        autoHideDuration={snackbar.duration}
         open={snackbar.open}
         onClose={hideSnackbar}
       >

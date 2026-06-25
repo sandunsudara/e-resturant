@@ -66,7 +66,7 @@ export default function ShopHomePage() {
         if (error.name === 'AbortError') return;
 
         dispatch(setProductsError(error.message));
-        showSnackbar(error.message || 'Unable to load products.', 'error');
+        showSnackbar(error.message || 'Unable to load products.', { severity: 'error', vertical: 'top', horizontal: 'center', duration: 4000 });
       }
     },
     [dispatch, selectedCategoryId, shop, showSnackbar]
@@ -110,7 +110,7 @@ export default function ShopHomePage() {
 
   const addItemToCart = (item) => {
     dispatch(addItem({ shopSlug, item }));
-    showSnackbar(`${item.name} added to cart.`, 'success');
+    showSnackbar(`${item.name} added to cart.`, { severity: 'success', vertical: 'top', horizontal: 'center', duration: 2500 });
   };
 
   const handleAddItem = (item) => {
