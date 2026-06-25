@@ -72,7 +72,8 @@ const STATUS_STYLES = {
   REJECTED: { bg: '#FFEBEE', color: '#B71C1C' }, // Dark Red
   PROCESSING: { bg: '#E1F5FE', color: '#01579B' }, // Blue
   CONFIRMED: { bg: '#E3F2FD', color: '#0D47A1' }, // Deep Blue
-  SHIPPED: { bg: '#F3E5F5', color: '#4A148C' } // Purple
+  SHIPPED: { bg: '#F3E5F5', color: '#4A148C' }, // Purple
+  IN_KITCHEN: { bg: '#fffb77ff', color: '#63420bff' }, // Purple
 };
 
 function getStatusStyle(status) {

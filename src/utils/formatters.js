@@ -24,7 +24,8 @@ const STATUS_DESCRIPTIONS = {
   REJECTED: 'Rejected',
   PROCESSING: 'Processing',
   CONFIRMED: 'Confirmed',
-  SHIPPED: 'Shipped'
+  SHIPPED: 'Shipped',
+  IN_KITCHEN: 'In Kitchen'
 };
 
 export function getStatusDescription(status) {
