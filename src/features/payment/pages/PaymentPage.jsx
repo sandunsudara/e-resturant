@@ -21,6 +21,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 import PageLoader from 'components/PageLoader/PageLoader';
 import { useSnackbar } from 'components/Snackbar/SnackbarProvider';
+import { useAlert } from 'components/Alert/AlertProvider';
 import { selectActiveSessionId, setActiveSessionId } from 'features/cart/cartSlice';
 import { selectCurrentShop } from 'features/shop/shopSlice';
 import OrderService from 'services/OrderService';
@@ -35,6 +36,7 @@ export default function PaymentPage() {
   const navigate = useNavigate();
   const { shopSlug } = useParams();
   const { showSnackbar } = useSnackbar();
+  const { showAlert } = useAlert();
   const activeSessionId = useSelector(selectActiveSessionId);
   const shop = useSelector(selectCurrentShop);
   const [error, setError] = useState('');
@@ -85,7 +87,11 @@ export default function PaymentPage() {
 
   const handleConfirmPayment = async () => {
     if (method === 'card') {
-      alert('This feature is not available');
+      showAlert({
+        title: 'Feature Unavailable',
+        message: 'This feature is not available.',
+        severity: 'warning'
+      });
       return;
     }
 
