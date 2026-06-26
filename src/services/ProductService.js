@@ -206,4 +206,13 @@ export default class ProductService {
       throw error;
     }
   }
+
+  static async getProductById(productId, signal) {
+    const payload = await ApiManager.post({
+      body: { product_id: productId },
+      endpoint: '/products/view',
+      signal
+    });
+    return payload?.data || payload;
+  }
 }
