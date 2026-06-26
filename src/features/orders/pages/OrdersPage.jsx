@@ -205,14 +205,21 @@ export default function OrdersPage() {
                 sx={{ minWidth: 0, width: '100%' }}
               >
                 <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography noWrap variant="subtitle1">
-                    #{order.orderNumber}
+                  <Typography noWrap variant="subtitle1" sx={{ fontWeight: 700 }}>
+                    {order.dailyToken || order.raw?.daily_token ? `Token: ${order.dailyToken || order.raw?.daily_token}` : `Order #${order.orderNumber}`}
                   </Typography>
-                  {order.createdAt ? (
-                    <Typography color="text.secondary" variant="caption">
-                      {formatDate(order.createdAt)}
-                    </Typography>
-                  ) : null}
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    {(order.dailyToken || order.raw?.daily_token) && (
+                      <Typography color="text.secondary" variant="caption">
+                        Order #${order.orderNumber}
+                      </Typography>
+                    )}
+                    {order.createdAt ? (
+                      <Typography color="text.secondary" variant="caption">
+                        {(order.dailyToken || order.raw?.daily_token) ? `• ${formatDate(order.createdAt)}` : formatDate(order.createdAt)}
+                      </Typography>
+                    ) : null}
+                  </Stack>
                 </Box>
                 <Stack alignItems="center" direction="row" spacing={1}>
                   <Chip
