@@ -79,6 +79,7 @@ function normalizeOrder(order, index) {
     shippingAddress: firstPresent(order.shipping_address, order.shippingAddress, order.shipping, null),
     billingAddress: firstPresent(order.billing_address, order.billingAddress, order.billing, null),
     items: normalizeOrderItems(order),
+    dailyToken: firstPresent(order.daily_token, order.dailyToken, order.daily_token_number, order.dailyTokenNumber, ''),
     raw: order
   };
 }

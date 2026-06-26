@@ -24,6 +24,7 @@ import CustomerDetailsDialog from '../components/CustomerDetailsDialog/CustomerD
 import MainLayout from '../layouts/MainLayout';
 import ShopService from '../services/ShopService';
 import CategoryService from '../services/CategoryService';
+import OrderService from '../services/OrderService';
 import { getShopVendorId } from '../utils/shopUtils';
 import { useUserOrderSocket } from '../components/UserOrderSocket/UserOrderSocket';
 import OrderReadyDialog from '../components/OrderReadyDialog/OrderReadyDialog';
@@ -158,9 +159,27 @@ export default function AppInitializer() {
 
   useEffect(() => {
     if (latestStatus && latestStatus.status === 'READY_TO_TABLE') {
-      setReadyOrder(latestStatus);
+      const vendorId = shop ? getShopVendorId(shop) : null;
+      if (vendorId && (latestStatus.order_db_id || latestStatus.id)) {
+        const controller = new AbortController();
+        OrderService.getOrder({
+          orderId: latestStatus.order_db_id || latestStatus.id,
+          vendorId,
+          signal: controller.signal
+        })
+          .then((fullOrder) => {
+            setReadyOrder(fullOrder || latestStatus);
+          })
+          .catch((err) => {
+            console.warn('Failed to fetch full order details:', err);
+            setReadyOrder(latestStatus);
+          });
+        return () => controller.abort();
+      } else {
+        setReadyOrder(latestStatus);
+      }
     }
-  }, [latestStatus]);
+  }, [latestStatus, shop]);
 
   const applyThemeConfig = (config) => {
     const updatedConfig = { ...config };
@@ -351,7 +370,8 @@ export default function AppInitializer() {
       />
       <OrderReadyDialog
         open={Boolean(readyOrder)}
-        orderId={readyOrder?.order_id}
+        orderId={readyOrder?.order_id || readyOrder?.orderNumber}
+        tokenNumber={readyOrder?.dailyToken || readyOrder?.daily_token || readyOrder?.daily_token_number || readyOrder?.token_number || readyOrder?.token}
         onClose={() => setReadyOrder(null)}
       />
     </MainLayout>

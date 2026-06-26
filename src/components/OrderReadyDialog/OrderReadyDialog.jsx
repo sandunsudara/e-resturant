@@ -12,7 +12,7 @@ const Transition = forwardRef(function Transition(props, ref) {
   return <Zoom ref={ref} {...props} />;
 });
 
-export default function OrderReadyDialog({ open, orderId, onClose }) {
+export default function OrderReadyDialog({ open, orderId, tokenNumber, onClose }) {
   return (
     <Dialog
       open={open}
@@ -71,24 +71,24 @@ export default function OrderReadyDialog({ open, orderId, onClose }) {
           Great news! Your delicious meal has been freshly prepared and is ready for pickup.
         </Typography>
 
-        {orderId && (
+        {tokenNumber && (
           <Box
             sx={{
               display: 'inline-block',
               px: 3,
               py: 1.5,
               borderRadius: 3,
-              backgroundColor: 'grey.100',
-              border: '1px dashed',
-              borderColor: 'grey.300',
+              backgroundColor: 'primary.light',
+              border: '1px solid',
+              borderColor: 'primary.main',
               mb: 2,
             }}
           >
-            <Typography variant="caption" display="block" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600, letterSpacing: 1.5 }}>
-              Order Number
+            <Typography variant="caption" display="block" color="primary.main" sx={{ textTransform: 'uppercase', fontWeight: 700, letterSpacing: 1.5 }}>
+              Token Number
             </Typography>
-            <Typography variant="h4" sx={{ fontWeight: 800, color: 'primary.main', mt: 0.5 }}>
-              {orderId}
+            <Typography variant="h4" sx={{ fontWeight: 900, color: 'primary.main', mt: 0.5 }}>
+              {tokenNumber}
             </Typography>
           </Box>
         )}
