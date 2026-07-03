@@ -15,7 +15,7 @@ import { formatCurrency } from 'utils/formatters';
 
 const DEFAULT_CURRENCY = 'LKR';
 
-export default function ShopItemCard({ currency = DEFAULT_CURRENCY, item, onAddItem }) {
+export default function ShopItemCard({ currency = DEFAULT_CURRENCY, item, onAddItem, hasAddons }) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [open, setOpen] = useState(false);
@@ -136,7 +136,18 @@ export default function ShopItemCard({ currency = DEFAULT_CURRENCY, item, onAddI
         </Typography>
       </CardContent>
       <CardActions sx={{ p: 2, pt: 0 }}>
-        <Button fullWidth onClick={() => onAddItem(item)} startIcon={<AddShoppingCartIcon />} variant="contained">
+        <Button
+          fullWidth
+          onClick={() => {
+            if (hasAddons) {
+              setOpen(true);
+            } else {
+              onAddItem(item);
+            }
+          }}
+          startIcon={<AddShoppingCartIcon />}
+          variant="contained"
+        >
           Add to cart
         </Button>
       </CardActions>

@@ -346,9 +346,21 @@ export default function OrdersPage() {
                             Qty {item.quantity}
                             {item.variation ? ` / ${item.variation}` : ''}
                           </Typography>
+                          {item.addons && item.addons.length > 0 && (
+                            <Box sx={{ mt: 0.5 }}>
+                              {item.addons.map((addon) => (
+                                <Typography key={addon.id} color="primary.main" sx={{ display: 'block', fontSize: '0.75rem', fontWeight: 500 }} variant="caption">
+                                  + {addon.name} ({formatCurrency(addon.price * addon.quantity, shop?.currency || DEFAULT_CURRENCY)})
+                                </Typography>
+                              ))}
+                            </Box>
+                          )}
                         </Box>
                         <Typography variant="body2">
-                          {formatCurrency(item.price * item.quantity, shop?.currency || DEFAULT_CURRENCY)}
+                          {formatCurrency(
+                            (item.price + (item.addons || []).reduce((sum, a) => sum + a.price, 0)) * item.quantity,
+                            shop?.currency || DEFAULT_CURRENCY
+                          )}
                         </Typography>
                       </Stack>
                     ))

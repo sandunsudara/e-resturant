@@ -37,6 +37,7 @@ export default function ShopHomePage() {
   const { showSnackbar } = useSnackbar();
   const loadMoreInFlightRef = useRef(false);
   const [combinationProduct, setCombinationProduct] = useState(null);
+  const [hasAddons, setHasAddons] = useState(false);
   const shop = useSelector(selectCurrentShop);
   const items = useSelector(selectProducts);
   const productsHasMore = useSelector(selectProductsHasMore);
@@ -45,6 +46,29 @@ export default function ShopHomePage() {
   const productsPage = useSelector(selectProductsPage);
   const productsError = useSelector(selectProductsError);
   const selectedCategoryId = useSelector(selectSelectedCategoryId);
+
+  useEffect(() => {
+    if (!shop) return undefined;
+
+    const controller = new AbortController();
+    const checkAddons = async () => {
+      try {
+        const res = await ProductService.getAddons({
+          vendorId: getShopVendorId(shop),
+          limit: 1,
+          signal: controller.signal
+        });
+        setHasAddons(res?.items?.length > 0);
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          console.error('Failed to check addons:', err);
+        }
+      }
+    };
+
+    checkAddons();
+    return () => controller.abort();
+  }, [shop]);
 
   const loadProducts = useCallback(
     async ({ append = false, page = 1, signal }) => {
@@ -158,7 +182,7 @@ export default function ShopHomePage() {
       >
         {productsLoading
           ? Array.from({ length: PRODUCT_PAGE_LIMIT }).map((_, index) => <ShopItemCardSkeleton key={index} />)
-          : items.map((item) => <ShopItemCard key={item.id} currency={shop?.currency} item={item} onAddItem={handleAddItem} />)}
+          : items.map((item) => <ShopItemCard key={item.id} currency={shop?.currency} item={item} onAddItem={handleAddItem} hasAddons={hasAddons} />)}
       </Box>
 
       <Box

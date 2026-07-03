@@ -15,46 +15,95 @@ import Typography from '@mui/material/Typography';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 import { useEffect, useMemo, useState } from 'react';
+import { useSelector } from 'react-redux';
 
 import { formatCurrency } from 'utils/formatters';
+import { selectCurrentShop } from 'features/shop/shopSlice';
+import { getShopVendorId } from 'utils/shopUtils';
+import ProductService from 'services/ProductService';
+import AddonsSelector from '../AddonsSelector/AddonsSelector';
 
 const DEFAULT_CURRENCY = 'LKR';
 
-function buildCartItem(product, combination) {
+function buildCartItem(product, combination, selectedAddons) {
   return {
     ...product,
-    id: `${product.id}:${combination.variationId || combination.id}`,
+    id: `${product.id}:${combination.variationId || combination.id}:${selectedAddons.map((a) => a.id).sort().join(',')}`,
     productId: product.productId || product.id,
     variationId: combination.variationId || combination.id || 0,
     variationLabel: combination.label,
     price: combination.price,
     currency: combination.currency || product.currency,
     image: combination.image || product.image,
-    selectedCombination: combination.raw || combination
+    selectedCombination: combination.raw || combination,
+    selectedAddons
   };
 }
 
 export default function ShopItemCombinationModal({ currency = DEFAULT_CURRENCY, onAddItem, onClose, open, product }) {
   const theme = useTheme();
+  const shop = useSelector(selectCurrentShop);
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
   const combinations = useMemo(() => product?.combinations || [], [product]);
   const [selectedCombinationId, setSelectedCombinationId] = useState('');
+  const [addons, setAddons] = useState([]);
+  const [selectedAddons, setSelectedAddons] = useState([]);
+  const [loadingAddons, setLoadingAddons] = useState(false);
 
   useEffect(() => {
     if (open) {
       setSelectedCombinationId('');
+      setSelectedAddons([]);
     }
   }, [open, product?.id]);
 
+  useEffect(() => {
+    if (!open || !product?.id) {
+      setAddons([]);
+      return;
+    }
+
+    const controller = new AbortController();
+    const fetchAddons = async () => {
+      setLoadingAddons(true);
+      try {
+        const vendorId = shop ? getShopVendorId(shop) : null;
+        if (vendorId) {
+          const addonsData = await ProductService.getAddons({ vendorId, signal: controller.signal });
+          setAddons(addonsData?.items || []);
+        }
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          console.error('Failed to load addons:', err);
+        }
+      } finally {
+        setLoadingAddons(false);
+      }
+    };
+
+    fetchAddons();
+
+    return () => {
+      controller.abort();
+    };
+  }, [open, product?.id, shop]);
+
+  const handleToggleAddon = (addon) => {
+    setSelectedAddons((prev) =>
+      prev.some((a) => a.id === addon.id) ? prev.filter((a) => a.id !== addon.id) : [...prev, addon]
+    );
+  };
+
   const selectedCombination = combinations.find((combination) => String(combination.id) === selectedCombinationId);
   const displayImage = selectedCombination?.image || product?.image;
-  const displayPrice = selectedCombination?.price ?? product?.price ?? 0;
+  const selectedAddonsTotal = selectedAddons.reduce((sum, addon) => sum + addon.price, 0);
+  const displayPrice = (selectedCombination?.price ?? product?.price ?? 0) + selectedAddonsTotal;
   const displayCurrency = selectedCombination?.currency || product?.currency || currency;
 
   const handleAddItem = () => {
     if (!product || !selectedCombination) return;
 
-    onAddItem(buildCartItem(product, selectedCombination));
+    onAddItem(buildCartItem(product, selectedCombination, selectedAddons));
   };
 
   return (
@@ -217,6 +266,12 @@ export default function ShopItemCombinationModal({ currency = DEFAULT_CURRENCY, 
                 })}
               </Stack>
             </Box>
+            <AddonsSelector
+              addons={addons}
+              selectedAddonIds={selectedAddons.map((a) => a.id)}
+              onToggleAddon={handleToggleAddon}
+              currency={displayCurrency}
+            />
           </Stack>
         </Box>
       </DialogContent>

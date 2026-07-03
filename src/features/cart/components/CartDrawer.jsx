@@ -98,7 +98,17 @@ export default function CartDrawer({ open, onClose, shopSlug }) {
 
         <Divider />
 
-        <Box sx={{ flex: 1, overflowY: 'auto', p: 2 }}>
+        <Box
+          sx={{
+            flex: 1,
+            overflowY: 'auto',
+            p: 2,
+            scrollbarWidth: 'none',
+            '&::-webkit-scrollbar': {
+              display: 'none'
+            }
+          }}
+        >
           {!hasItems ? (
             <Stack alignItems="center" justifyContent="center" spacing={2} sx={{ minHeight: 280, textAlign: 'center' }}>
               <ShoppingCartCheckoutIcon color="disabled" sx={{ fontSize: 54 }} />
@@ -173,6 +183,15 @@ export default function CartDrawer({ open, onClose, shopSlug }) {
                         {item.variationLabel}
                       </Typography>
                     ) : null}
+                    {item.selectedAddons && item.selectedAddons.length > 0 && (
+                      <Box sx={{ mt: 0.5 }}>
+                        {item.selectedAddons.map((addon) => (
+                          <Typography key={addon.id} color="primary.main" sx={{ display: 'block', fontSize: '0.75rem', fontWeight: 500 }} variant="caption">
+                            + {addon.name} ({formatCurrency(addon.price, item.currency)})
+                          </Typography>
+                        ))}
+                      </Box>
+                    )}
                     <Stack alignItems="center" direction="row" justifyContent="space-between" sx={{ mt: 1 }}>
                       <Stack alignItems="center" direction="row" spacing={0.5}>
                         <Tooltip title="Decrease quantity">
@@ -197,7 +216,12 @@ export default function CartDrawer({ open, onClose, shopSlug }) {
                           </IconButton>
                         </Tooltip>
                       </Stack>
-                      <Typography variant="subtitle1">{formatCurrency(item.price * item.quantity, item.currency)}</Typography>
+                      <Typography variant="subtitle1">
+                        {formatCurrency(
+                          (item.price + (item.selectedAddons || []).reduce((sum, a) => sum + a.price, 0)) * item.quantity,
+                          item.currency
+                        )}
+                      </Typography>
                     </Stack>
                   </Box>
                 </Box>

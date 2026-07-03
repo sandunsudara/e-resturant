@@ -182,6 +182,7 @@ export default class ProductService {
       is_approved: 'APPROVED',
       vendor_id: vendorId,
       status: 'ACTIVE',
+      product_type: 'PHYSICAL',
       // type: 'NEW_ARRIVALS',
       sort_by: 'LATEST',
       page,
@@ -203,6 +204,27 @@ export default class ProductService {
         return waitForMockResponse({ categoryId, limit, page });
       }
 
+      throw error;
+    }
+  }
+
+  static async getAddons({ limit = 100, page = 1, signal, vendorId }) {
+    const requestBody = {
+      is_approved: 'APPROVED',
+      vendor_id: vendorId,
+      status: 'ACTIVE',
+      sort_by: 'LATEST',
+      product_type: 'ADDON',
+      page,
+      limit
+    };
+
+    try {
+      const payload = await ApiManager.post({ body: requestBody, endpoint: '/products/list', signal });
+      return normalizeProducts({ limit, page, payload });
+    } catch (error) {
+      if (error.name === 'AbortError') throw error;
+      console.warn('Addon API failed:', error);
       throw error;
     }
   }

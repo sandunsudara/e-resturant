@@ -14,7 +14,11 @@ function normalizeOrderProducts(items) {
   return items.map((item) => ({
     product_id: item.productId || item.id,
     variation_id: item.variationId || 0,
-    qty: item.quantity
+    qty: item.quantity,
+    addons: (item.selectedAddons || []).map((addon) => ({
+      product_id: addon.id,
+      qty: item.quantity
+    }))
   }));
 }
 
@@ -54,7 +58,13 @@ function normalizeOrderItems(order) {
       item.variant,
       item.productAttributeCombination?.name,
       ''
-    )
+    ),
+    addons: (item.addons || item.orderAddons || item.order_addons || item.order_product_addons || []).map((addon) => ({
+      id: addon.id || addon.product_id,
+      name: addon.name || addon.product?.name || 'Addon',
+      price: Number(addon.price || addon.unit_price || addon.product?.unit_price || 0),
+      quantity: Number(addon.qty || addon.quantity || 1)
+    }))
   }));
 }
 

@@ -26,7 +26,8 @@ function toCartItem(item) {
     name: item.name,
     price: item.price,
     currency: item.currency,
-    image: item.image
+    image: item.image,
+    selectedAddons: item.selectedAddons || []
   };
 }
 
@@ -112,7 +113,10 @@ export function selectCartTotalQuantity(state, shopSlug) {
 }
 
 export function selectCartSubtotal(state, shopSlug) {
-  return selectCartItems(state, shopSlug).reduce((total, item) => total + item.price * item.quantity, 0);
+  return selectCartItems(state, shopSlug).reduce((total, item) => {
+    const addonsTotal = (item.selectedAddons || []).reduce((sum, addon) => sum + addon.price, 0);
+    return total + (item.price + addonsTotal) * item.quantity;
+  }, 0);
 }
 
 export function selectActiveSessionId(state) {
