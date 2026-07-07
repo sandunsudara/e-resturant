@@ -52,16 +52,18 @@ const cartSlice = createSlice({
     addItem(state, action) {
       const { shopSlug, item } = action.payload;
       const shopCart = getShopCart(state, shopSlug);
-      const existingItem = shopCart.items.find((cartItem) => cartItem.id === item.id);
+      const targetId = item.cartId || item.id;
+      const existingItem = shopCart.items.find((cartItem) => cartItem.id === targetId);
+      const quantityToAdd = typeof item.quantity === 'number' ? item.quantity : 1;
 
       if (existingItem) {
-        existingItem.quantity += 1;
+        existingItem.quantity += quantityToAdd;
         return;
       }
 
       shopCart.items.push({
         ...toCartItem(item),
-        quantity: 1
+        quantity: quantityToAdd
       });
     },
     incrementItem(state, action) {
