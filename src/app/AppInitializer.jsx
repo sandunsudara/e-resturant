@@ -164,7 +164,24 @@ export default function AppInitializer() {
     }
 
     const handleInitialUserGesture = () => {
-      // Haptic test feedback & audio unlock on first tap anywhere
+      // Create and unlock a dummy AudioContext on first user interaction (touch/click)
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) {
+          const ctx = new AudioContext();
+          if (ctx.state === 'suspended') {
+            ctx.resume();
+          }
+          // Play silent buffer to unlock browser audio engine
+          const buffer = ctx.createBuffer(1, 1, 22050);
+          const source = ctx.createBufferSource();
+          source.buffer = buffer;
+          source.connect(ctx.destination);
+          source.start(0);
+        }
+      } catch (e) {}
+
+      // Haptic test feedback on first tap
       if (typeof window !== 'undefined' && 'vibrate' in navigator) {
         try {
           navigator.vibrate(50);

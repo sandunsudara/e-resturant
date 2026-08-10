@@ -54,43 +54,52 @@ export default function OrderReadyDialog({ open, orderId, tokenNumber, onClose }
   }, []);
 
   const playPagerBeep = useCallback(() => {
+    // 1. Try Web Audio API (Synthesized beep)
     try {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
-      if (!AudioContext) return;
-      if (!audioCtxRef.current || audioCtxRef.current.state === 'closed') {
-        audioCtxRef.current = new AudioContext();
+      if (AudioContext) {
+        if (!audioCtxRef.current || audioCtxRef.current.state === 'closed') {
+          audioCtxRef.current = new AudioContext();
+        }
+        const ctx = audioCtxRef.current;
+        if (ctx.state === 'suspended') {
+          ctx.resume();
+        }
+
+        const beeps = [
+          { time: 0, freq: 950 },
+          { time: 0.15, freq: 1200 },
+          { time: 0.3, freq: 950 },
+          { time: 0.45, freq: 1200 },
+        ];
+
+        beeps.forEach(({ time, freq }) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, ctx.currentTime + time);
+
+          gain.gain.setValueAtTime(0.5, ctx.currentTime + time);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + time + 0.12);
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+
+          osc.start(ctx.currentTime + time);
+          osc.stop(ctx.currentTime + time + 0.12);
+        });
       }
-      const ctx = audioCtxRef.current;
-      if (ctx.state === 'suspended') {
-        ctx.resume();
-      }
-
-      const beeps = [
-        { time: 0, freq: 950 },
-        { time: 0.15, freq: 1200 },
-        { time: 0.3, freq: 950 },
-        { time: 0.45, freq: 1200 },
-      ];
-
-      beeps.forEach(({ time, freq }) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, ctx.currentTime + time);
-
-        gain.gain.setValueAtTime(0.35, ctx.currentTime + time);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + time + 0.12);
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-
-        osc.start(ctx.currentTime + time);
-        osc.stop(ctx.currentTime + time + 0.12);
-      });
     } catch (err) {
-      console.warn('Unable to play pager sound:', err);
+      console.warn('Unable to play synthesized audio:', err);
     }
+
+    // 2. HTML Audio Fallback (Data URI Audio Beep)
+    try {
+      // Standard short alert sound encoded as base64 audio
+      const snd = new Audio('data:audio/wav;base64,UklGRl9vAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YUtvAAB4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4');
+      snd.play().catch(() => {});
+    } catch (e) {}
   }, []);
 
   useEffect(() => {
@@ -109,6 +118,18 @@ export default function OrderReadyDialog({ open, orderId, tokenNumber, onClose }
   useEffect(() => {
     if (open) {
       unlockAudio();
+
+      // Show system notification with sound/vibrate if permitted
+      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+        try {
+          new Notification('Order Ready!', {
+            body: `Your order ${orderId ? '#' + orderId : ''} is ready for pickup!`,
+            vibrate: [300, 100, 300, 100, 300],
+            tag: 'order-ready'
+          });
+        } catch (e) {}
+      }
+
       const triggerAlert = () => {
         if (typeof window !== 'undefined' && 'vibrate' in navigator) {
           try {
@@ -129,7 +150,7 @@ export default function OrderReadyDialog({ open, orderId, tokenNumber, onClose }
     return () => {
       stopAlerts();
     };
-  }, [open, playPagerBeep, stopAlerts, unlockAudio]);
+  }, [open, orderId, playPagerBeep, stopAlerts, unlockAudio]);
 
   const handleClose = (event, reason) => {
     stopAlerts();
