@@ -158,6 +158,30 @@ export default function AppInitializer() {
   const [readyOrder, setReadyOrder] = useState(null);
 
   useEffect(() => {
+    // Prompt Notification permission immediately when user lands on main page
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission().catch(() => {});
+    }
+
+    const handleInitialUserGesture = () => {
+      // Haptic test feedback & audio unlock on first tap anywhere
+      if (typeof window !== 'undefined' && 'vibrate' in navigator) {
+        try {
+          navigator.vibrate(50);
+        } catch (e) {}
+      }
+    };
+
+    window.addEventListener('touchstart', handleInitialUserGesture, { once: true, passive: true });
+    window.addEventListener('click', handleInitialUserGesture, { once: true, passive: true });
+
+    return () => {
+      window.removeEventListener('touchstart', handleInitialUserGesture);
+      window.removeEventListener('click', handleInitialUserGesture);
+    };
+  }, []);
+
+  useEffect(() => {
     if (latestStatus && latestStatus.status === 'READY_TO_TABLE') {
       const vendorId = shop ? getShopVendorId(shop) : null;
       if (vendorId && (latestStatus.order_db_id || latestStatus.id)) {
