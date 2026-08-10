@@ -38,6 +38,21 @@ export default function OrderReadyDialog({ open, orderId, tokenNumber, onClose }
     }
   }, []);
 
+  const unlockAudio = useCallback(() => {
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
+      if (!audioCtxRef.current || audioCtxRef.current.state === 'closed') {
+        audioCtxRef.current = new AudioContext();
+      }
+      if (audioCtxRef.current.state === 'suspended') {
+        audioCtxRef.current.resume();
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, []);
+
   const playPagerBeep = useCallback(() => {
     try {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -79,7 +94,21 @@ export default function OrderReadyDialog({ open, orderId, tokenNumber, onClose }
   }, []);
 
   useEffect(() => {
+    const handleTouchOrClick = () => {
+      unlockAudio();
+    };
+    window.addEventListener('touchstart', handleTouchOrClick, { passive: true });
+    window.addEventListener('click', handleTouchOrClick, { passive: true });
+
+    return () => {
+      window.removeEventListener('touchstart', handleTouchOrClick);
+      window.removeEventListener('click', handleTouchOrClick);
+    };
+  }, [unlockAudio]);
+
+  useEffect(() => {
     if (open) {
+      unlockAudio();
       const triggerAlert = () => {
         if (typeof window !== 'undefined' && 'vibrate' in navigator) {
           try {
@@ -100,7 +129,7 @@ export default function OrderReadyDialog({ open, orderId, tokenNumber, onClose }
     return () => {
       stopAlerts();
     };
-  }, [open, playPagerBeep, stopAlerts]);
+  }, [open, playPagerBeep, stopAlerts, unlockAudio]);
 
   const handleClose = (event, reason) => {
     stopAlerts();
