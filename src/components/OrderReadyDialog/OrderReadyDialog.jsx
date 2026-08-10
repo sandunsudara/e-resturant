@@ -6,19 +6,114 @@ import DialogContent from '@mui/material/DialogContent';
 import Typography from '@mui/material/Typography';
 import Zoom from '@mui/material/Zoom';
 import FastfoodIcon from '@mui/icons-material/Fastfood';
-import { forwardRef } from 'react';
+import { forwardRef, useCallback, useEffect, useRef } from 'react';
 
 const Transition = forwardRef(function Transition(props, ref) {
   return <Zoom ref={ref} {...props} />;
 });
 
 export default function OrderReadyDialog({ open, orderId, tokenNumber, onClose }) {
+  const audioCtxRef = useRef(null);
+  const intervalRef = useRef(null);
+
+  const stopAlerts = useCallback(() => {
+    if (typeof window !== 'undefined' && 'vibrate' in navigator) {
+      try {
+        navigator.vibrate(0);
+      } catch (e) {
+        // ignore
+      }
+    }
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    if (audioCtxRef.current) {
+      try {
+        audioCtxRef.current.close();
+      } catch (e) {
+        // ignore
+      }
+      audioCtxRef.current = null;
+    }
+  }, []);
+
+  const playPagerBeep = useCallback(() => {
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
+      if (!audioCtxRef.current || audioCtxRef.current.state === 'closed') {
+        audioCtxRef.current = new AudioContext();
+      }
+      const ctx = audioCtxRef.current;
+      if (ctx.state === 'suspended') {
+        ctx.resume();
+      }
+
+      const beeps = [
+        { time: 0, freq: 950 },
+        { time: 0.15, freq: 1200 },
+        { time: 0.3, freq: 950 },
+        { time: 0.45, freq: 1200 },
+      ];
+
+      beeps.forEach(({ time, freq }) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + time);
+
+        gain.gain.setValueAtTime(0.35, ctx.currentTime + time);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + time + 0.12);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(ctx.currentTime + time);
+        osc.stop(ctx.currentTime + time + 0.12);
+      });
+    } catch (err) {
+      console.warn('Unable to play pager sound:', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (open) {
+      const triggerAlert = () => {
+        if (typeof window !== 'undefined' && 'vibrate' in navigator) {
+          try {
+            navigator.vibrate([300, 100, 300, 100, 300]);
+          } catch (e) {
+            // ignore
+          }
+        }
+        playPagerBeep();
+      };
+
+      triggerAlert();
+      intervalRef.current = setInterval(triggerAlert, 2500);
+    } else {
+      stopAlerts();
+    }
+
+    return () => {
+      stopAlerts();
+    };
+  }, [open, playPagerBeep, stopAlerts]);
+
+  const handleClose = (event, reason) => {
+    stopAlerts();
+    if (onClose) {
+      onClose(event, reason);
+    }
+  };
   return (
     <Dialog
       open={open}
       TransitionComponent={Transition}
       keepMounted
-      onClose={onClose}
+      onClose={handleClose}
       aria-describedby="order-ready-dialog-slide-description"
       PaperProps={{
         sx: {
@@ -100,7 +195,7 @@ export default function OrderReadyDialog({ open, orderId, tokenNumber, onClose }
 
       <DialogActions sx={{ justifyContent: 'center', px: 3, pb: 2, pt: 1 }}>
         <Button
-          onClick={onClose}
+          onClick={handleClose}
           variant="contained"
           fullWidth
           sx={{
